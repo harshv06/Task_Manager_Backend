@@ -1,35 +1,33 @@
 package com.consultadd.taskmanager.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
+@Entity
+@Table(name = "tasks")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-@Entity
-@Table(name = "users")
-public class User {
+public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Getter
-    @Column(nullable = false,unique = true)
-    private String email;
+    private String title;
 
-    @Column(name = "password",nullable = false)
-    private String password;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    private String fullName;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Priority priority;
+
+    private LocalDateTime deadline;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -37,4 +35,13 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
+
+
+    public enum Priority {
+        LOW, MEDIUM, HIGH
+    }
 }
