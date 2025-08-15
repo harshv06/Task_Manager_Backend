@@ -23,8 +23,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
-    private JwtService jwtService;
-    private UserDetailService UserDetailService;
+    private final JwtService jwtService;
+    private final UserDetailService UserDetailService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
