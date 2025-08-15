@@ -6,6 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RegisterRequestDTO {
+    @Getter
     private String email;
     @Getter
     private String password;

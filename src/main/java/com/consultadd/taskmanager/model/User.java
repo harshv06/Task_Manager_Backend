@@ -23,6 +23,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
+    @Getter
     @Column(nullable = false,unique = true)
     private String email;
 
