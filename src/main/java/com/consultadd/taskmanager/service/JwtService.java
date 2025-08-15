@@ -1,14 +1,17 @@
 package com.consultadd.taskmanager.service;
 
+import com.consultadd.taskmanager.dto.TokenPairDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -18,7 +21,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JwtService {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -60,15 +63,31 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token){
-        return extractAllClaims(token)!=null;
+    private boolean isTokenExpired(Claims claims) {
+        return claims.getExpiration().before(new Date());
     }
+
+    public boolean isTokenValid(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims != null && !isTokenExpired(claims);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
     // Validate token
     public boolean validateTokenForUser(String token, UserDetails userDetails) {
-        final String username = extractUsernameFromToken(token);
-        return username != null
-                && username.equals(userDetails.getUsername());
+        try {
+            final String username = extractUsernameFromToken(token);
+            return username != null
+                    && username.equals(userDetails.getUsername())
+                    && isTokenValid(token);
+        } catch (Exception e) {
+            log.error("Token validation for user failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     public String extractUsernameFromToken(String token) {
@@ -82,10 +101,7 @@ public class JwtService {
 
     public boolean isRefreshToken(String token) {
         Claims claims = extractAllClaims(token);
-        if(claims == null) {
-            return false;
-        }
-        return "refresh".equals(claims.get("tokenType"));
+        return claims != null && "refresh".equals(claims.get("tokenType"));
     }
 
     public Claims extractAllClaims(String token){
@@ -97,8 +113,16 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
 
-        }catch (JwtException | IllegalArgumentException e){
-            throw new RuntimeException(e);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT expired: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.warn("Invalid JWT: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.warn("Unsupported JWT: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT claims string is empty: {}", e.getMessage());
+        } catch (SecurityException e) {
+            log.warn("Invalid JWT signature: {}", e.getMessage());
         }
         return claims;
     }
@@ -106,5 +130,11 @@ public class JwtService {
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+    public TokenPairDTO generateTokenPair(Authentication authentication) {
+        String accessToken = generateAccessToken(authentication);
+        String refreshToken = generateRefreshToken(authentication);
+
+        return new TokenPairDTO(accessToken, refreshToken);
     }
 }
