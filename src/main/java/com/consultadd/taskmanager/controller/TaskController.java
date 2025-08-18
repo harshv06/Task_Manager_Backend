@@ -30,8 +30,24 @@ public class TaskController {
         User user = userService.findByEmail(email).orElseThrow();
 
         Task created = taskService.createTask(dto, email);
-        return ResponseEntity.ok(convertToWithStatusDto(created, user));
+        return ResponseEntity.ok(convertToWithStatusDto(created));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResponseStatusCodeDTO> updateTask(
+            @PathVariable Long id,
+            @RequestBody TaskRequestDTO dto) {
+        Task updated = taskService.updateTask(id, dto);
+        return ResponseEntity.ok(convertToWithStatusDto(updated));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTask(@PathVariable Long id){
+        taskService.deleteTask(id);
+        return ResponseEntity.ok("Task Deleted");
+    }
+
+
 
     @GetMapping
     public ResponseEntity<List<TaskReponseDTO>> listTasks() {
@@ -46,7 +62,7 @@ public class TaskController {
         );
     }
 
-    private TaskResponseStatusCodeDTO convertToWithStatusDto(Task task, User user) {
+    private TaskResponseStatusCodeDTO convertToWithStatusDto(Task task) {
 
         return TaskResponseStatusCodeDTO.builder()
                 .id(task.getId())

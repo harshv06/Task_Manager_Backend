@@ -29,13 +29,11 @@ public class TaskService {
 
     public Task createTask(TaskRequestDTO taskRequestDTO, String email) {
 
-        // Find user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     return new RuntimeException("User not found with email: " + email);
                 });
 
-        // Validate input
         if (taskRequestDTO.getTitle() == null || taskRequestDTO.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Task title cannot be empty");
         }
@@ -60,7 +58,7 @@ public class TaskService {
         }
     }
 
-    public Task updateTask(Long taskId, Task updatedTaskData, Set<String> tagNames) {
+    public Task updateTask(Long taskId, TaskRequestDTO updatedTaskData) {
         Task existingTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
