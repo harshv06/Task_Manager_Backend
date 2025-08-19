@@ -4,6 +4,7 @@ import com.consultadd.taskmanager.model.Task;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter @Setter
 @Builder
@@ -18,6 +19,6 @@ public class TaskReponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
-//    private Set<String> tagNames;
+    private Set<String> tagNames;
 //    private Set<String> assignees;
 }

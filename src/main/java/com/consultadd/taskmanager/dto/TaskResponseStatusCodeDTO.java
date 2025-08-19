@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Builder
@@ -16,7 +17,7 @@ public class TaskResponseStatusCodeDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-//    private Set<String> tagNames;
+    private Set<String> tagNames;
 //    private Set<String> assigneeEmails;
     private String status;
 }
