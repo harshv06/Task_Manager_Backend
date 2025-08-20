@@ -2,10 +2,7 @@ package com.consultadd.taskmanager.controller;
 
 
 import com.consultadd.taskmanager.config.Utils;
-import com.consultadd.taskmanager.dto.TaskReponseDTO;
-import com.consultadd.taskmanager.dto.TaskRequestDTO;
-import com.consultadd.taskmanager.dto.TaskResponseStatusCodeDTO;
-import com.consultadd.taskmanager.dto.UpdateStatusDTO;
+import com.consultadd.taskmanager.dto.*;
 import com.consultadd.taskmanager.model.Tag;
 import com.consultadd.taskmanager.model.Task;
 import com.consultadd.taskmanager.model.User;
@@ -93,6 +90,17 @@ public class TaskController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{id}/assign")
+    public ResponseEntity<?> assignUsers(@PathVariable Long id, @RequestBody AssignRequestDTO dto) {
+        taskService.assignUsers(id, dto.getUserIds());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/unassign")
+    public ResponseEntity<?> unassignUsers(@PathVariable Long id, @RequestBody AssignRequestDTO dto) {
+        taskService.unassignUsers(id, dto.getUserIds());
+        return ResponseEntity.ok().build();
+    }
 
     private TaskResponseStatusCodeDTO convertToWithStatusDto(Task task,Long userId) {
         String status = taskService.getTaskStatus(task.getId(),userId);
@@ -105,6 +113,9 @@ public class TaskController {
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .tagNames(task.getTags().stream().map(Tag::getName).collect(Collectors.toSet()))
+                .assigneeEmails(task.getAssignments().stream()
+                        .map(mapping -> mapping.getUser().getEmail())
+                        .collect(Collectors.toSet()))
                 .status(status)
                 .build();
     }
@@ -120,6 +131,7 @@ public class TaskController {
                 .updatedAt(task.getUpdatedAt())
                 .createdBy(task.getCreatedBy().getEmail())
                 .tagNames(task.getTags().stream().map(Tag::getName).collect(Collectors.toSet()))
+                .assignees(task.getAssignments().stream().map(utm -> utm.getUser().getEmail()).collect(Collectors.toSet()))
                 .build();
     }
 }

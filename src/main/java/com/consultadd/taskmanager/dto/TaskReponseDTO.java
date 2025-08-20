@@ -20,5 +20,5 @@ public class TaskReponseDTO {
     private LocalDateTime updatedAt;
     private String createdBy;
     private Set<String> tagNames;
-//    private Set<String> assignees;
+    private Set<String> assignees;
 }

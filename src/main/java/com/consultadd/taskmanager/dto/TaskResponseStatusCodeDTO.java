@@ -18,6 +18,6 @@ public class TaskResponseStatusCodeDTO {
     private LocalDateTime updatedAt;
 
     private Set<String> tagNames;
-//    private Set<String> assigneeEmails;
+    private Set<String> assigneeEmails;
     private String status;
 }

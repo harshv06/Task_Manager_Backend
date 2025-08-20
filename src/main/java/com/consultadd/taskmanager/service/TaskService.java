@@ -155,4 +155,41 @@ public class TaskService {
                 mapping.getStatus().getName().name() : "TODO";
     }
 
+    public void assignUsers(Long taskId, Set<Long> userIds) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        Status defaultStatus = statusRepository.findByName(Status.StatusName.TODO)
+                .orElseThrow(() -> new RuntimeException("Default status not found"));
+
+        Set<User> assignees = taskMappingRepository.findByTask(task)
+                .stream().map(TaskMapping::getUser).collect(Collectors.toSet());
+
+        assignees.remove(task.getCreatedBy());
+
+        for (Long userId : userIds) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            TaskMapping mapping = new TaskMapping(user, task, defaultStatus, LocalDateTime.now());
+            taskMappingRepository.save(mapping);
+        }
+    }
+
+    public void unassignUsers(Long taskId, Set<Long> userIds) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        Set<User> assignees = taskMappingRepository.findByTask(task)
+                .stream().map(TaskMapping::getUser).collect(Collectors.toSet());
+
+        assignees.remove(task.getCreatedBy());
+
+
+        for (Long userId : userIds) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            taskMappingRepository.findByUserAndTask(user, task)
+                    .ifPresent(taskMappingRepository::delete);
+        }
+    }
 }
